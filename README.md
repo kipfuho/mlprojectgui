@@ -5,9 +5,12 @@ Install dependencies: Flask, flask-cors, torchvision, efficientnet_pytorch, albu
 - pip install torchvision
 - pip install efficientnet_pytorch
 - pip install albumentations
+
 Run server:
 - flask --app server run --port 8080
 
 # React web
 Install nodejs: https://nodejs.org/en/download/
-Run web server: npm start
+
+Run web server: 
+- npm start
