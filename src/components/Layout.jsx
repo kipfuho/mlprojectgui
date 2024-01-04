@@ -1,19 +1,20 @@
-import { useState, useMemo, createContext } from 'react';
-import IconButton from '@mui/material/IconButton';
+import { useState, useMemo, createContext, useEffect } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import ParticleBackground from './ParticleBackground';
+import IconButton from '@mui/material/IconButton';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import { grey, amber } from '@mui/material/colors';
-import ParticleBackground from './ParticleBackground';
 import { Outlet } from 'react-router-dom';
 import { Button } from '@mui/material';
 
 const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
 export default function Layout(){
-	const [mode, setMode] = useState('light');
+	const [mode, setMode] = useLocalStorage("thememode", "light");
 	const [particleMode, setParticleMode] = useState(true);
 	const colorMode = useMemo(
 		() => ({
@@ -23,6 +24,10 @@ export default function Layout(){
 		}),
 		[],
 	);
+
+	useEffect(() => {
+		setMode(mode)
+	}, [mode])
 
   	const theme = useMemo(
 		() =>
@@ -44,7 +49,8 @@ export default function Layout(){
 							secondary: grey[800],
 						},
 						background: {
-							secondary: "#EEEEEE"
+							secondary: "#EEEEEE",
+							button: "#c8c8c8"
 						},
 						action: {
 							hoverOpacity: 0.2
@@ -59,14 +65,15 @@ export default function Layout(){
 							600: "#b1b1b1"
 						},
 						divider: amber[200],
+						text: {
+							primary: '#BEBEBE',
+							secondary: grey[500],
+						},
 						background: {
 							default: "#292C35",
 							primary: grey[500],
 							secondary: "#343843",
-						},
-						text: {
-							primary: '#BEBEBE',
-							secondary: grey[500],
+							button: "#4a5060",
 						},
 						action: {
 							hoverOpacity: 0.2
@@ -77,17 +84,28 @@ export default function Layout(){
 		[mode],
   	);
 
+	const handleButtonClick = (id) => {
+		var element = document.getElementById(id);
+		var headerOffset = 85;
+		var elementPosition = element.getBoundingClientRect().top;
+		var offsetPosition = elementPosition + window.scrollY - headerOffset;
+	
+		window.scrollTo({
+			top: offsetPosition,
+			behavior: "smooth"
+		});
+	};
+
 	return(
 		<>
 			<ColorModeContext.Provider value={colorMode}>
 				<ThemeProvider theme={theme}>
-					{particleMode && <ParticleBackground linkColor={theme.palette.text.primary}/>}
 					<div className='flex flex-col p-1 transition-colors' style={{backgroundColor: theme.palette.background.default, color: theme.palette.text.primary}}>
-						<h1 className='flex w-[100vw] h-[10vh] fixed top-0 z-50 items-center border-b-2' style={{background: theme.palette.background.secondary}}>
-							<div className='flex flex-grow justify-center h-[3.5rem] ml-[15rem] border-gray-500 rounded-[1rem] mx-5 p-2'>
-								<Button variant="outlined" sx={{paddingX: 3, marginX: 1, borderRadius: 5, background: theme.palette.background.secondary}}>About</Button>
-								<Button variant="outlined" sx={{paddingX: 3, marginX: 1, borderRadius: 5, background: theme.palette.background.secondary}}>Demo</Button>
-								<Button variant="outlined" sx={{paddingX: 3, marginX: 1, borderRadius: 5, background: theme.palette.background.secondary}}>References</Button>
+						<h1 className='flex w-[100vw] h-[5.5rem] fixed top-0 z-50 items-center border-b-2' style={{background: theme.palette.background.secondary}}>
+							<div className='flex flex-grow justify-center h-[3.5rem] ml-[15rem] border-gray-500 rounded-[1rem] mx-5 p-2 transition-all'>
+								<Button variant="contained" sx={{paddingX: 3, marginX: 1, borderRadius: 5}} onClick={() => handleButtonClick("about")}><span className='font-semibold'>About</span></Button>
+								<Button variant="contained" sx={{paddingX: 3, marginX: 1, borderRadius: 5}} onClick={() => handleButtonClick("demo")}><span className='font-semibold'>Demo</span></Button>
+								<Button variant="contained" sx={{paddingX: 3, marginX: 1, borderRadius: 5}} onClick={() => handleButtonClick("references")}><span className='font-semibold'>References</span></Button>
 							</div>
 							<div className='w-[10rem] mr-8'>
 								<div className='flex group items-center justify-end'>
@@ -120,6 +138,7 @@ export default function Layout(){
 							This is footer
 						</p>
 					</div>
+					{particleMode && <ParticleBackground linkColor={theme.palette.text.primary}/>}
 				</ThemeProvider>
 			</ColorModeContext.Provider>
 		</>
