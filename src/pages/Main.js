@@ -11,7 +11,7 @@ export default function Main() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [haveRequest, setHaveRequest] = useState(false);
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState({type: "none"});
   const [openSnackBar, setOpenSnackBar] = useState({state: false, type: "error", message: ""});
 
   const handleImageChange = (event) => {
@@ -23,6 +23,7 @@ export default function Main() {
       // You may also want to check the file size, type, etc.
 
       setSelectedImage(file);
+      setResponse({type: "none"})
 
       // If you want to preview the selected image, you can use FileReader
       // const reader = new FileReader();
@@ -39,9 +40,11 @@ export default function Main() {
     if (file && file.type === 'video/mp4') {
       // Update the state with the selected video file
       setSelectedVideo(file);
+      setResponse({type: "none"})
     } else {
       // Handle invalid file type or no file selected
       setSelectedVideo(null);
+      setResponse({type: "none"})
     }
   };
 
@@ -56,6 +59,7 @@ export default function Main() {
         // For example, check the file size, type, etc.
 
         setSelectedImage(file);
+        setResponse({type: "none"})
 
         // If you want to preview the pasted image, you can use FileReader
         // const reader = new FileReader();
@@ -74,7 +78,7 @@ export default function Main() {
   const imageEvaluateBtnClick = () => {
     if(!haveRequest){
       setHaveRequest(true);
-      setResponse(null);
+      setResponse({type: "none"});
       var formData = new FormData();
       formData.append('file', selectedImage);
       fetch('http://localhost:8080/image', {
@@ -84,7 +88,7 @@ export default function Main() {
       .then(response => response.json())
       .then(data => {
         console.log(data)
-        setResponse(data);
+        setResponse({type: "image", data: data});
         setHaveRequest(false)
       })
       .catch(error => {
@@ -99,7 +103,7 @@ export default function Main() {
   const videoEvaluateBtnClick = () => {
     if(!haveRequest){
       setHaveRequest(true);
-      setResponse(null);
+      setResponse({type: "none"});
       var formData = new FormData();
       formData.append('file', selectedVideo);
       fetch('http://localhost:8080/video', {
@@ -109,7 +113,7 @@ export default function Main() {
       .then(response => response.json())
       .then(data => {
         console.log(data)
-        setResponse(data);
+        setResponse({type: "video", data: data});
         setHaveRequest(false)
       })
       .catch(error => {
@@ -151,7 +155,7 @@ export default function Main() {
           </Typography>
           <CardMedia
             component="img"
-            image="https://i0.wp.com/www.crowsworldofanime.com/wp-content/uploads/2021/01/reZERO_Season_2_Part_2_Episode_41_Figure01.jpg?fit=1918%2C1080&ssl=1"
+            image="https://career.gpo.vn/uploads/images/truong-hoc/logo-hust.png"
             alt="Pfp"
           />
           <Typography variant="h5" component="div" sx={{marginTop: 1}}>
@@ -171,21 +175,21 @@ export default function Main() {
     )
   };
 
-  const evaluation = (score) => {
+  const evaluation = (score, type) => {
     if(score <= 0.2){
-      return "Very good score, most likely to be a REAL picture/video"
+      return "This is most likely to be a REAL " + type
     }
     else if(score <= 0.4){
-      return "Good score overall, likely to be a REAL picture/video"
+      return "This is likely to be a REAL " + type
     }
     else if(score <= 0.6){
-      return "Bad score, cannot decide between REAL and FAKE"
+      return "Bad score, cannot firmly decide between REAL and FAKE"
     }
     else if(score <= 0.8){
-      return "Good score, likely to be a FAKE picture/video"
+      return "This is likely to be a FAKE " + type
     }
     else{
-      return "Very good score, most likely to be a FAKE picture/video"
+      return "This is most likely to be a FAKE " + type
     }
   }
 
@@ -228,7 +232,7 @@ export default function Main() {
                   <p>Please wait ...</p>
                 </div>
               }
-              {response &&
+              {response.type === "image" &&
                 <div>
                   <div className="flex items-center">
                     <p>Score</p>
@@ -237,9 +241,9 @@ export default function Main() {
                         <QuestionMarkIcon sx={{fontSize: 15}}/>
                       </IconButton>
                     </Tooltip>
-                    <p>: {response.score}</p>
+                    <p>: {response.data.score}</p>
                   </div>
-                  <p>{evaluation(parseFloat(response.score))}</p>
+                  <p>{evaluation(parseFloat(response.data.score), response.type)}</p>
                 </div>
               }
             </div>
@@ -264,7 +268,7 @@ export default function Main() {
                   <p>Please wait ...</p>
                 </div>
               }
-              {response &&
+              {response.type === "video" &&
                 <div>
                   <div className="flex items-center">
                     <p>Score</p>
@@ -273,9 +277,9 @@ export default function Main() {
                         <QuestionMarkIcon sx={{fontSize: 15}}/>
                       </IconButton>
                     </Tooltip>
-                    <p>: {response.score}</p>
+                    <p>: {response.data.score}</p>
                   </div>
-                  <p>{evaluation(parseFloat(response.score))}</p>
+                  <p>{evaluation(parseFloat(response.data.score), response.type)}</p>
                 </div>
               }
             </div>
